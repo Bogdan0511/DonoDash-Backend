@@ -25,8 +25,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @Service
 @RequiredArgsConstructor
@@ -84,16 +89,31 @@ public class UserServiceImpl implements UserService {
                 .firstName(registrationDTO.getFirstName())
                 .lastName(registrationDTO.getLastName())
                 .email(registrationDTO.getEmail())
-                .profilePicture(registrationDTO.getProfilePicture())
                 .youtubeChannel(registrationDTO.getYoutubeChannel())
                 .userType(UserType.valueOf(registrationDTO.getUserType()))
                 .password(passwordEncoder.encode(registrationDTO.getPassword()))
                 .build();
+
+        if (registrationDTO.getProfilePicture() != null && !registrationDTO.getProfilePicture().isEmpty()) {
+            String filePath = saveFile(registrationDTO.getProfilePicture());
+            user.setProfilePicture(filePath);
+        }
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         saveUserToken(user, jwtToken);
         return userMapper.entityToDTO(user, jwtToken, refreshToken);
+    }
+
+    private String saveFile(MultipartFile file) {
+        String uploadDir = "D:/Projects_2024/DonoDash_profile_pictures";
+        Path filePath = Paths.get(uploadDir, System.currentTimeMillis() + "_" + file.getOriginalFilename());
+        try {
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            return "/images/" + filePath.getFileName().toString();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save file", e);
+        }
     }
 
     private void saveUserToken(User user, String jwtToken) {

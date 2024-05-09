@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
@@ -14,7 +15,7 @@ public class RegistrationDTO {
     private String lastName;
     private String displayName;
     private String youtubeChannel;
-    private String profilePicture;
+    private MultipartFile profilePicture;
     private String email;
     private String password;
     private String userType;
