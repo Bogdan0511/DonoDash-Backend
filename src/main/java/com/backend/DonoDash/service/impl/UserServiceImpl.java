@@ -2,6 +2,7 @@ package com.backend.DonoDash.service.impl;
 
 import com.backend.DonoDash.dto.AuthenticationDTO;
 import com.backend.DonoDash.dto.RegistrationDTO;
+import com.backend.DonoDash.dto.UpdateDTO;
 import com.backend.DonoDash.dto.UserDTO;
 import com.backend.DonoDash.enums.TokenType;
 import com.backend.DonoDash.enums.UserType;
@@ -32,6 +33,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -103,6 +106,45 @@ public class UserServiceImpl implements UserService {
         var refreshToken = jwtService.generateRefreshToken(user);
         saveUserToken(user, jwtToken);
         return userMapper.entityToDTO(user, jwtToken, refreshToken);
+    }
+
+    @Override
+    public UpdateDTO updateUser(UUID userId, RegistrationDTO registrationDTO){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found!"));
+
+        if (!Objects.equals(registrationDTO.getFirstName(), "") && !registrationDTO.getFirstName().isEmpty())
+            user.setFirstName(registrationDTO.getFirstName());
+
+        if (!Objects.equals(registrationDTO.getLastName(), "") && !registrationDTO.getLastName().isEmpty())
+            user.setLastName(registrationDTO.getLastName());
+
+        if (!Objects.equals(registrationDTO.getDisplayName(), "") && !registrationDTO.getDisplayName().isEmpty())
+            user.setDisplayName(registrationDTO.getDisplayName());
+
+        if (!Objects.equals(registrationDTO.getEmail(), "") && !registrationDTO.getEmail().isEmpty())
+            user.setEmail(registrationDTO.getEmail());
+
+        if (!Objects.equals(registrationDTO.getYoutubeChannel(), "") && !registrationDTO.getYoutubeChannel().isEmpty())
+            user.setYoutubeChannel(registrationDTO.getYoutubeChannel());
+
+        if (registrationDTO.getProfilePicture() != null && !registrationDTO.getProfilePicture().isEmpty()) {
+            String filePath = saveFile(registrationDTO.getProfilePicture());
+            user.setProfilePicture(filePath);
+        }
+
+        UpdateDTO updateDTO = UpdateDTO.builder()
+                                .id(user.getId())
+                                .firstName(user.getFirstName())
+                                .lastName(user.getLastName())
+                                .displayName(user.getDisplayName())
+                                .profilePicture(user.getProfilePicture())
+                                .userType(user.getUserType())
+                                .email(user.getEmail())
+                                .youtubeChannel(user.getYoutubeChannel())
+                                .build();
+        userRepository.save(user);
+        return updateDTO;
     }
 
     private String saveFile(MultipartFile file) {
