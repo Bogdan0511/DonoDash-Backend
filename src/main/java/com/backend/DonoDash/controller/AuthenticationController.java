@@ -73,7 +73,6 @@ public class AuthenticationController {
     @GetMapping("/validate-session")
     public ResponseEntity<?> validateSession(HttpServletRequest request) {
         String jwt = extractJwtFromCookie(request, "accessToken");
-        System.out.println(jwt);
         if (jwt != null && !jwt.isEmpty()) {
             return tokenRepository.findByToken(jwt)
                     .map(token -> {
