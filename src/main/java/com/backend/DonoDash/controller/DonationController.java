@@ -21,4 +21,10 @@ public class DonationController {
         return ResponseEntity.ok(donationService.getUserDonations(userId));
     }
 
+    @PostMapping("/revolut")
+    public ResponseEntity<Void> saveRevolutDonations(@RequestBody List<DonationDTO> donations) {
+        donationService.saveRevolutDonations(donations);
+        return ResponseEntity.ok().build();
+    }
+
 }

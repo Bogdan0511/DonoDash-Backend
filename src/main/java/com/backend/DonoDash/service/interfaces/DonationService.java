@@ -7,4 +7,5 @@ import java.util.UUID;
 
 public interface DonationService {
     List<DonationDTO> getUserDonations(UUID id);
+    void saveRevolutDonations(List<DonationDTO> donations);
 }
